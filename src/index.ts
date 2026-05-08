@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { serve } from '@hono/node-server';
 import { api } from './api/routes.js';
 import { initDb } from './db/init.js';
@@ -35,7 +36,7 @@ initDb();
 loadRulesFromDir();
 
 if (process.env.SENTRY_AUTO_MATCH === 'true') {
-  runMatching();
+  runMatching().catch(e => console.error('[sentry] Auto-match failed:', e));
 }
 
 console.log(`[sentry] Starting server on port ${PORT}`);

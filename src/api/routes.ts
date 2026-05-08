@@ -101,8 +101,8 @@ api.post('/findings/:id/acknowledge', (c) => {
   return c.json({ status: 'acknowledged' });
 });
 
-api.post('/match/run', (c) => {
-  const results = runMatching();
+api.post('/match/run', async (c) => {
+  const results = await runMatching();
   return c.json({ message: 'Match run complete', ...results });
 });
 

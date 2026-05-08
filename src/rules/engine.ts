@@ -2,6 +2,8 @@ import { getDb } from '../db/init.js';
 import { getActiveRules } from './loader.js';
 import { DetectionRule, Finding, RuleField, MatchResult } from '../types.js';
 
+const IRIS_URL = process.env.IRIS_API_URL || process.env.IRIS_URL || 'http://localhost:3000';
+
 interface IocRecord {
   id: string;
   value: string;
@@ -14,6 +16,18 @@ interface IocRecord {
   tags: string;
   first_seen: string;
   last_seen: string;
+}
+
+async function fetchIocsFromIris(): Promise<IocRecord[]> {
+  try {
+    const res = await fetch(`${IRIS_URL}/iocs?limit=5000`);
+    if (!res.ok) throw new Error(`iris returned ${res.status}`);
+    const body = await res.json() as { iocs: IocRecord[] };
+    return body.iocs || [];
+  } catch (err) {
+    console.error(`[sentry] Failed to fetch IOCs from iris: ${err}`);
+    return [];
+  }
 }
 
 function matchField(ioc: IocRecord, field: RuleField): boolean {
@@ -79,11 +93,11 @@ function matchRule(rule: DetectionRule, iocs: IocRecord[]): MatchResult {
   return { rule, matchedIocs, totalCandidates: candidates.length };
 }
 
-export function runMatching(): { findings: number; rulesMatched: number; iocsScanned: number; durationMs: number } {
+export async function runMatching(): Promise<{ findings: number; rulesMatched: number; iocsScanned: number; durationMs: number }> {
   const start = Date.now();
   const db = getDb();
   const rules = getActiveRules();
-  const iocs = db.prepare('SELECT * FROM iocs ORDER BY confidence DESC LIMIT 5000').all() as IocRecord[];
+  const iocs = await fetchIocsFromIris();
   const allMatchResults: MatchResult[] = [];
   const findings: Finding[] = [];
   const now = new Date().toISOString();
