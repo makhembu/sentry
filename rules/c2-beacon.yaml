@@ -1,0 +1,31 @@
+name: C2 Beacon Detection
+description: Detects IPs and domains associated with known C2 infrastructure based on common beacon patterns
+severity: high
+category: command-and-control
+tactic: TA0011
+technique: T1071
+ioc_types:
+  - ip
+  - domain
+condition:
+  any:
+    - field: source
+      operator: in
+      value:
+        - abusech
+        - talos
+    - field: tags
+      operator: contains
+      value: "c2"
+    - field: type
+      operator: equals
+      value: ip
+references:
+  - https://attack.mitre.org/techniques/T1071/
+tags:
+  - c2
+  - beacon
+  - command-and-control
+false_positives:
+  - CDN IPs
+  - Known cloud providers

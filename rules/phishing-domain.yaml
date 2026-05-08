@@ -1,0 +1,31 @@
+name: Phishing Domain Detection
+description: Flags domains and URLs from phishing feeds or that match suspicious patterns
+severity: high
+category: phishing
+tactic: TA0001
+technique: T1566
+ioc_types:
+  - domain
+  - url
+condition:
+  any:
+    - field: category
+      operator: equals
+      value: phishing
+    - field: source
+      operator: in
+      value:
+        - phishtank
+        - urlhaus
+    - field: tags
+      operator: contains
+      value: "phish"
+tags:
+  - phishing
+  - domain
+  - social-engineering
+references:
+  - https://attack.mitre.org/techniques/T1566/
+false_positives:
+  - Security testing domains
+  - Bug bounty programs
