@@ -11,7 +11,7 @@
     "rules:reload": "tsx src/rules/loader.ts",
     "match:run": "tsx src/rules/engine.ts",
     "lint": "tsc --noEmit",
-    "test": "node --experimental-vm-modules node_modules/.bin/jest"
+    "test": "npx tsx --test tests/*.test.ts"
   },
   "keywords": ["detection-engineering", "sigma-rules", "soc", "security-automation", "threat-detection"],
   "license": "MIT",
