@@ -1,0 +1,120 @@
+openapi: "3.0.3"
+info:
+  title: Sentry — Detection Rule Engine
+  description: Sigma-inspired YAML rule engine. Matches IOCs against detection rules, generates findings for analyst triage.
+  version: 1.0.0
+  contact:
+    name: makhembu
+    url: https://github.com/makhembu/sentry
+
+servers:
+  - url: http://localhost:3001
+    description: Local development
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        "200":
+          description: Service status with rule and finding counts
+
+  /rules:
+    get:
+      summary: List detection rules
+      parameters:
+        - name: status
+          in: query
+          schema: { type: string, enum: [active, inactive] }
+      responses:
+        "200":
+          description: Array of detection rules
+
+  /rules/{id}:
+    get:
+      summary: Get single rule
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Rule object with parsed YAML fields
+        "404":
+          description: Rule not found
+
+  /rules/reload:
+    post:
+      summary: Reload rules from disk
+      responses:
+        "200":
+          description: Rules reloaded with count
+
+  /rules/{id}/toggle:
+    post:
+      summary: Toggle rule active/inactive
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Rule status toggled
+
+  /findings:
+    get:
+      summary: List findings
+      parameters:
+        - name: acknowledged
+          in: query
+          schema: { type: string, enum: [true, false] }
+        - name: severity
+          in: query
+          schema: { type: string, enum: [low, medium, high, critical] }
+        - name: ruleId
+          in: query
+          schema: { type: string }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 50, maximum: 500 }
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0 }
+      responses:
+        "200":
+          description: Paginated findings list
+
+  /findings/{id}/acknowledge:
+    post:
+      summary: Acknowledge a finding
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Finding acknowledged
+
+  /match/run:
+    post:
+      summary: Run matching engine against IOCs
+      responses:
+        "200":
+          description: Match results with findings generated
+
+  /match/history:
+    get:
+      summary: Match run history
+      responses:
+        "200":
+          description: Last 20 match runs with timestamps
+
+  /dashboard:
+    get:
+      summary: Dashboard summary
+      responses:
+        "200":
+          description: Aggregated rule and finding statistics

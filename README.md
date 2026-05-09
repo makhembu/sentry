@@ -14,6 +14,33 @@ npm start
 # Server running at http://localhost:3001
 ```
 
+## Architecture
+
+```mermaid
+flowchart LR
+    Feeds["Threat Feeds"] --> Iris["iris<br/>IOC Aggregation<br/>Port 3000"]
+    Iris --> Sentry["sentry (this service)<br/>Detection Rules<br/>Port 3001"]
+    Iris --> PhishKit["phishkit<br/>Port 3002"]
+    Iris --> PacketWatch["packetwatch<br/>Port 3003"]
+    Sentry --> Trace["trace<br/>Incident Correlation<br/>Port 3004"]
+    PhishKit --> Trace
+    PacketWatch --> Trace
+    Trace --> Nexus["nexus<br/>Dashboard & Gateway<br/>Port 3100"]
+```
+
+sentry pulls IOCs from iris, runs them through YAML detection rules, and generates findings for analyst triage.
+
+## Docker
+
+```bash
+# Build and run standalone
+docker build -t sentry .
+docker run -p 3001:3001 sentry
+
+# Run the full ecosystem
+docker compose -f ../nexus/docker-compose.yml up
+```
+
 ## Rule Format (YAML)
 
 Rules live in `rules/` as `.yaml` files:
